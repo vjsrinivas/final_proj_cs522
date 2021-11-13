@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from pca import pca
+from pca import pca, scratchpca
 
 def standardizeData(datatr, datate):
     datatrT = datatr.T
@@ -44,8 +44,10 @@ print()
 print(xtrain)
 print()
 redxtrain = pca(xtrain, 2)
+redsxtrain = scratchpca(xtrain, 2)
 print()
 print("Pima dataset with dimensions reduced to 2")
 print()
-print(redxtrain)
+for i in range(len(redxtrain)):
+    print(redsxtrain[i])
 print()
