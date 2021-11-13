@@ -4,6 +4,7 @@ import os
 import sys
 import csv
 from tqdm import tqdm
+import pandas
 
 # Training meta:
 DATA_CAT = [
@@ -30,32 +31,14 @@ BUILD_META_CAT = [
             ''
         ]
 
+def preprocessBuildingData(data_path:str):
+    _data = pandas.read_csv(data_path)
+    print(_data[:, "timestamp"])
+    
+    return 0
 
-# Parse data:
-def parseCSV(filename:str):
-    _ret = []
-    with open(filename, newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',')
-        for i,row in enumerate(tqdm(reader)):
-            _ret.append(row)
-    return _ret
-
-
-# Parse train.csv:
-def parseTrainData(filename:str):
-    _ret = {}
-    with open(filename, newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',')
-        for i,row in enumerate(tqdm(reader)):
-            _id = row[0]
-            if _id not in row:
-                _ret[_id] = row[1:]
-        
-    return _ret
+def preprocessWeatherdata(data_path:str):
+    _data = pandas.read_csv(data_path)
 
 # Visualizing data:
 
-
-if __name__ == '__main__':
-    #parseCSV('./data/train.csv')
-    parseTrainData('./data/train.csv')
