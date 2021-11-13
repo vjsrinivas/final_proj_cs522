@@ -4,6 +4,7 @@ import os
 import sys
 import csv
 from tqdm import tqdm
+import pandas
 
 # Training meta:
 DATA_CAT = [
