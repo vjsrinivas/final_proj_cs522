@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from data import data 
+from src import pca
 
 # Due 11/18/2021:
 def prototype1(data_path):
@@ -14,8 +15,9 @@ def prototype1(data_path):
     train_weather_data = data.preprocessWeatherdata(train_weather_file)
 
     # combine data frames together:
-    train_data = data.combineDataFrames(train_building_data, train_meta_data, train_weather_data) 
-    print(train_data)
+    data.mapMetaToTrain(train_building_data, train_meta_data, train_weather_data)
+    #train_data = data.combineDataFrames(train_building_data, train_meta_data, train_weather_data) 
+    #print(train_data)
 
     # reduce complexity of data:
 

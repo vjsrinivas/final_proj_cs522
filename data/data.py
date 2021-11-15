@@ -68,12 +68,36 @@ def preprocessMeta(data_path:str):
     return _data, str_cats, str_cat_legend
 
 def combineDataFrames(df_b, df_m, df_w):
+    cats = []
+    for df in [df_b, df_m, df_w]:
+        cats.append(df.columns.to_list())
     df_concat = pandas.concat([df_b, df_m, df_w])
-    return df_concat.to_numpy()
+    return df_concat.to_numpy(), cats
 
 def combineMetaBuilding(df_b, df_m):
+    cats = []
+    for df in [df_b, df_m]:
+        cats.append(df.columns.to_list())
     df_concat = pandas.concat([df_b, df_m])
-    return df_concat.to_numpy()
+    return df_concat.to_numpy(), cats
+
+def mapMetaToTrain(df_tb, df_tm, df_wm):
+    query_id = 400
+    meta_query = df_tm[df_tm['building_id'] == query_id]
+    site_id_query = meta_query['site_id'].to_list()[0]
+    weather_query = df_wm[df_wm['site_id'] == site_id_query]
+    train_query = df_tb[df_tb['building_id'] == query_id]
+    print(weather_query['timestamp'])
+    print(train_query['timestamp'])
+    diff = weather_query['timestamp'] - train_query['timestamp']
+    print(diff[pandas.notna(diff)])
+
+    #df_wm[ df_wm['site_id'] == 3]
+    #df_tb[df_tb['building_id'] == 400]
+    return 0
+
+def mapMetatoTest(df_test, df_tm):
+    return 0
 
 # Visualizing data:
 
