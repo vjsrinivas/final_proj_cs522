@@ -64,7 +64,7 @@ def preprocessMeta(data_path:str):
     _data.primary_use = _data.primary_use.astype('category').cat.codes
     _data['primary_use'] = pandas.Categorical(_data['primary_use'])
     # map NaN to -1?
-    _data['floor_count'] = _data['floor_count'].fillna(-1)
+    #_data['floor_count'] = _data['floor_count'].fillna(-1)
     return _data, str_cats, str_cat_legend
 
 def combineDataFrames(df_b, df_m, df_w):
@@ -82,22 +82,21 @@ def combineMetaBuilding(df_b, df_m):
     return df_concat.to_numpy(), cats
 
 def mapMetaToTrain(df_tb, df_tm, df_wm):
-    query_id = 400
-    meta_query = df_tm[df_tm['building_id'] == query_id]
-    site_id_query = meta_query['site_id'].to_list()[0]
-    weather_query = df_wm[df_wm['site_id'] == site_id_query]
-    train_query = df_tb[df_tb['building_id'] == query_id]
-    print(weather_query['timestamp'])
-    print(train_query['timestamp'])
-    diff = weather_query['timestamp'] - train_query['timestamp']
-    print(diff[pandas.notna(diff)])
-
-    #df_wm[ df_wm['site_id'] == 3]
-    #df_tb[df_tb['building_id'] == 400]
-    return 0
+    df_tb = df_tb.merge(df_tm, left_on='building_id', right_on='building_id', how='left')
+    df_tb = df_tb.merge(df_wm, left_on=['site_id', 'timestamp'], right_on=['site_id', 'timestamp'], how="left")
+    y = df_tb.pop('meter_reading')
+    return df_tb.to_numpy(), y.to_numpy() # x,y
 
 def mapMetatoTest(df_test, df_tm):
     return 0
+
+def saveCache(np_list:np.ndarray, np_file):
+    print("Saving cache file for %s"%(np_file))
+    np.save(np_file, np_list)
+
+def loadCache(np_file):
+    _item = np.load(np_file, allow_pickle=True)
+    return _item
 
 # Visualizing data:
 
