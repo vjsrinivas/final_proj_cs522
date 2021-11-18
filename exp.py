@@ -5,7 +5,7 @@ import src.fld
 import argparse
 import os
 from data import data
-from experiments.proto1 import *
+from experiments import proto1, proto2, proto3
 
 def parseArgs():
     args = argparse.ArgumentParser()
@@ -14,9 +14,13 @@ def parseArgs():
     return args.parse_args()
 
 def expRun(exp_name:str, *exp_kwargs):
-    if exp_name == 'proto1':
+    if exp_name == 'proto1': # regression tree
         # run prototype stuff here:
-        prototype1(*exp_kwargs)
+        proto1.run1(*exp_kwargs)
+    elif exp_name == 'proto2': # svm
+        proto2.run1(*exp_kwargs)
+    elif exp_name == 'proto3': # knn
+        proto3.run1(*exp_kwargs)
     else:
         raise Exception("Unrecognized experiment name!")
 
