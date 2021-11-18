@@ -1,11 +1,13 @@
 from math import e
 import os
 import numpy as np
+from numpy.lib.function_base import average
 from data import data 
 from src import pca
 from src import models
 from sklearn.model_selection import train_test_split
 import gc
+from sklearn.model_selection import KFold
 
 # Due 11/18/2021:
 def run1(data_path):
@@ -79,18 +81,35 @@ def run1(data_path):
     # memory management:
     del mini_train
 
-    _mini_train_pca, _mini_test_pca, mini_y, mini_test_y = train_test_split(_mini_train_pca, mini_y, test_size=0.1, random_state=42)
-    print("Training size: ", _mini_train_pca.shape, "Training label size:", mini_y.shape, "Testing size:", _mini_test_pca.shape, "Testing label size:", mini_test_y.shape)
+    # _mini_train_pca, _mini_test_pca, mini_y, mini_test_y = train_test_split(_mini_train_pca, mini_y, test_size=0.1, random_state=42)
+    # print("Training size: ", _mini_train_pca.shape, "Training label size:", mini_y.shape, "Testing size:", _mini_test_pca.shape, "Testing label size:", mini_test_y.shape)
 
     # run classifier: regression trees:
     _knn_rmsle = []
     print("Fitting....")
-    '''
+    k_fold = 10
+    kf = KFold(n_splits=k_fold)
     for k in [1,5,10,15,20,25,30]:
-        _error = models.regressionNeighborsLoop(_mini_train_pca, mini_y, _mini_test_pca, mini_test_y, k_size=k)
-        _knn_rmsle.append(_error)
+        print()
+        print("--------------------------------"+str(k)+"--------------------------------")
+        print()
+        k_fold_error = []
+        run = 0
+        for train_index, test_index in kf.split(_mini_train_pca):
+            run += 1
+            print("Run " + str(run))
+            # print("Train Length: " + str(len(train_index)) + " Test Size: " + str(len(test_index)))
+            X_train, X_test = _mini_train_pca[train_index], _mini_train_pca[test_index]
+            y_train, y_test = mini_y[train_index], mini_y[test_index]
+
+            _error = models.regressionNeighborsLoop(X_train, y_train, X_test, y_test, k_size=k)
+            k_fold_error.append(_error)
+
+        _knn_rmsle.append(np.average(np.array(k_fold_error)))
+        print(str(k_fold) + "-Fold Cross Validation Errors: " + str(k_fold_error))
+        print("Average Error for " + str(k_fold) + "-Fold Cross validation: " + str(np.average(np.array(k_fold_error))))
     np.save('knn_proto3_output.npy', _knn_rmsle)
-    '''
-    _knn_rmsle = np.load('knn_proto3_output.npy', allow_pickle=True)
+    
+    # _knn_rmsle = np.load('knn_proto3_output.npy', allow_pickle=True)
     data.plot_knn_k([1,5,10,15,20,25,30], _knn_rmsle)
     

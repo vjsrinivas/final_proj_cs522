@@ -67,6 +67,12 @@ def mapMetaToTrain(df_tb, df_tm, df_wm, fill_na=True):
             if df_tb[col].isnull().values.any():
                 df_tb[col] = df_tb[col].fillna(-1)
     _cols = df_tb.columns.to_list() # gives you meter_reading as well
+
+    
+    # manually remove site 0 based on ASHRAE feeddback:
+    df_tb = df_tb[df_tb['site_id'] != 0]
+    # print("Removed Site 0 Data Shape: " + str(df_tb.shape))
+
     y = df_tb.pop('meter_reading')
         
     # memory reduction:
@@ -76,9 +82,8 @@ def mapMetaToTrain(df_tb, df_tm, df_wm, fill_na=True):
             df_tb[col] = df_tb[col].astype(np.float32)
     df_tb['building_id'] = df_tb['building_id'].astype(np.uint16)
     df_tb['meter'] = df_tb['meter'].astype(np.uint8)
+    
 
-    # manually remove site 0 based on ASHRAE feeddback:
-    #df_tb[]
 
     return df_tb.to_numpy(), y.to_numpy(), _cols # x,y
 
