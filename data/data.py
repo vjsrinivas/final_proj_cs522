@@ -28,7 +28,7 @@ def preprocessBuildingData(data_path:str):
     # figure out what to do with timestamp column:
     _data['timestamp'] = __convert_date__(_data['timestamp'])
     # normalize meter reading?
-    _data['meter_reading'] = __normalize_data__(_data['meter_reading'])
+    #_data['meter_reading'] = __normalize_data__(_data['meter_reading'])
     return _data
 
 def preprocessWeatherdata(data_path:str):
@@ -80,7 +80,10 @@ def loadCache(np_file):
     return _item
 
 # Visualizing data:
-def featureSparsity(data, x_labels, outfile="featureSparsity"):
+def featureSparsity(data, x_labels, outfile="featureSparsity", msg_suppress=False):
+    if not msg_suppress:
+        print("Generating feature sparsity figure...")
+        
     num_na = []
     fig = plt.figure(figsize=(10,5))
     plt.title("Sparsity of Features Present")
