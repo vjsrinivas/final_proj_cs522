@@ -1,3 +1,5 @@
+PLOTLY = True
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -5,31 +7,9 @@ import sys
 import csv
 from tqdm import tqdm
 import pandas
-
-# Training meta:
-DATA_CAT = [
-            'building_id',
-            'meter',
-            'timestamp',
-            'meter_reading'
-        ]
-
-WEATHER_DATA_CAT = [
-            'site_id',
-            'timestamp',
-            'air_temperature',
-            'cloud_coverage',
-            'dew_temperature',
-            'precip_depth_1_hr',
-            '',
-        ]
-
-BUILD_META_CAT = [
-            '',
-            '',
-            '',
-            ''
-        ]
+if PLOTLY:
+    import plotly.express as px
+    import plotly.graph_objects as go
 
 def __convert_date__(col):
     date_col = pandas.to_datetime(col)
@@ -84,8 +64,9 @@ def combineMetaBuilding(df_b, df_m):
 def mapMetaToTrain(df_tb, df_tm, df_wm):
     df_tb = df_tb.merge(df_tm, left_on='building_id', right_on='building_id', how='left')
     df_tb = df_tb.merge(df_wm, left_on=['site_id', 'timestamp'], right_on=['site_id', 'timestamp'], how="left")
+    _cols = df_tb.columns.to_list()
     y = df_tb.pop('meter_reading')
-    return df_tb.to_numpy(), y.to_numpy() # x,y
+    return df_tb.to_numpy(), y.to_numpy(), _cols # x,y
 
 def mapMetatoTest(df_test, df_tm):
     return 0
@@ -99,4 +80,35 @@ def loadCache(np_file):
     return _item
 
 # Visualizing data:
+def featureSparsity(data, x_labels, outfile="featureSparsity"):
+    num_na = []
+    fig = plt.figure(figsize=(10,5))
+    plt.title("Sparsity of Features Present")
+    for i in range(data.shape[1]):
+        _na = np.count_nonzero( np.isnan(data[:,i]) ) / data.shape[0]
+        #print(_na)
+        num_na.append(_na)
+    #print(len(num_na), len(x_labels))
+    plt.barh(x_labels, num_na)
+    plt.ylabel("Feature Type")
+    plt.xlabel("Sparsity Percentage")
+    plt.savefig(os.path.join('figures', "%s.png"%outfile))
 
+def pca_3d_plot(data):
+    x,y,z = data[:,0], data[:,1], data[:,2]
+    if PLOTLY:
+        marker_data = go.Scatter3d(
+            x=data[:,0], 
+            y=data[:,1], 
+            z=data[:,2], 
+            marker=go.scatter3d.Marker(size=3), 
+            opacity=0.8, 
+            mode='markers'
+        )
+        fig=go.Figure(data=marker_data)
+        fig.show()
+    else:
+        fig = plt.figure()
+        ax = plt.axes(projection='3d')
+        ax.scatter3D(x,y,z)
+        plt.show()
