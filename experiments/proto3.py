@@ -85,9 +85,12 @@ def run1(data_path):
     # run classifier: regression trees:
     _knn_rmsle = []
     print("Fitting....")
-    for k in [5,10,15,20,25,30]:
+    '''
+    for k in [1,5,10,15,20,25,30]:
         _error = models.regressionNeighborsLoop(_mini_train_pca, mini_y, _mini_test_pca, mini_test_y, k_size=k)
         _knn_rmsle.append(_error)
     np.save('knn_proto3_output.npy', _knn_rmsle)
-    data.plot_knn_k([5,10,15,20,25,30], _knn_rmsle)
+    '''
+    _knn_rmsle = np.load('knn_proto3_output.npy', allow_pickle=True)
+    data.plot_knn_k([1,5,10,15,20,25,30], _knn_rmsle)
     

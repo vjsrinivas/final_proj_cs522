@@ -170,6 +170,8 @@ def pca_3d_plot(data):
 def plot_knn_k(knn_ks, knn_error):
     fig = plt.figure()
     plt.plot(knn_ks, knn_error)
+    plt.gca().invert_xaxis()
+    plt.xticks(knn_ks)
     plt.xlabel('k values')
     plt.ylabel('RMSL Error')
     plt.title("KNN K-Values vs RMSLE")
