@@ -102,13 +102,14 @@ def run1(data_path):
 
     # test on real testset:
     # reduce with PCA:
-    '''
     print("Reading in testset...")
     test_x, _ = data.loadTestFeatures(test_file, test_weather_file, train_meta_file) # no y included; ignoring the column name output cuz I already know it
-    test_result = data.test(_model, test_x, is_scipy=True)
-    print(test_result.shape)
-    #data.test_to_csv(,'')
-    '''
+    pca_test_x = pca.incremental_pca(test_x, 3, 3000)
+    del test_x
+    test_result = data.test(_model, pca_test_x, is_scipy=True)
+    np.save('test_out_example.npy', test_result)
+    data.test_to_csv(test_result,'./submissions/test_proto3.csv')
+    
 
 # No PCA reduction
 def run2(data_path):

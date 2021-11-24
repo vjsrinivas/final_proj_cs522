@@ -3,11 +3,18 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
+from sklearn.decomposition import IncrementalPCA
+from scipy import sparse
 
 def pca(data, d):
     pcaObject = PCA(n_components=d)
     reducedData = pcaObject.fit_transform(data)
     return reducedData
+
+def incremental_pca(data, d, batch_size):
+    pcaObject = IncrementalPCA(n_components=d, batch_size=batch_size)
+    X_sparse = sparse.csr_matrix(data)
+    return pcaObject.fit_transform(X_sparse)
 
 def scratchpca(data, d):
     cov_mat = np.cov(data.T)
