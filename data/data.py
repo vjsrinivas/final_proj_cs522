@@ -131,6 +131,13 @@ def test_to_csv(test_out, csv_file_out):
     # test_out -> meter_readings 
     _row_id = np.arange(start=0, stop=test_out.shape[0])
     print(_row_id)
+    with open(csv_file_out, 'w') as csvfile:
+        fieldnames = ['row_id', 'meter_reading']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for i in tqdm(range(test_out.shape[0])):
+            writer.writerow({'row_id':i, 'meter_reading':test_out[i]}) 
     return 0
 
 # Visualizing data:

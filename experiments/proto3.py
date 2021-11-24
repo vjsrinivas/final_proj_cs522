@@ -112,4 +112,11 @@ def run1(data_path):
     
     # _knn_rmsle = np.load('knn_proto3_output.npy', allow_pickle=True)
     data.plot_knn_k([1,5,10,15,20,25,30], _knn_rmsle)
-    
+
+    print("Reading in testset...")
+    _model = models.regressionNeighbors(X_train, y_train, X_test, y_test, k_size=1)
+    test_x, _ = data.loadTestFeatures(test_file, test_weather_file, train_meta_file) # no y included; ignoring the column name output cuz I already know it
+    pca_test_x = pca.incremental_pca(test_x, 3, 3000)
+    test_result = data.test(_model, pca_test_x, is_scipy=True)
+    print(test_result.shape)
+    data.test_to_csv(test_result,'./submissions/test_proto3.csv')
