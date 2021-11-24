@@ -87,6 +87,7 @@ def run1(data_path):
     # run classifier: regression trees:
     _knn_rmsle = []
     print("Fitting....")
+    '''
     k_fold = 10
     kf = KFold(n_splits=k_fold)
     for k in [1,5,10,15,20,25,30]:
@@ -109,14 +110,19 @@ def run1(data_path):
         print(str(k_fold) + "-Fold Cross Validation Errors: " + str(k_fold_error))
         print("Average Error for " + str(k_fold) + "-Fold Cross validation: " + str(np.average(np.array(k_fold_error))))
     np.save('knn_proto3_output.npy', _knn_rmsle)
+    '''
     
     # _knn_rmsle = np.load('knn_proto3_output.npy', allow_pickle=True)
-    data.plot_knn_k([1,5,10,15,20,25,30], _knn_rmsle)
+    #data.plot_knn_k([1,5,10,15,20,25,30], _knn_rmsle)
+    
+    _mini_train_pca, _mini_test_pca, mini_y, mini_test_y = train_test_split(_mini_train_pca, mini_y, test_size=0.1, random_state=42)
+    print("Training size: ", _mini_train_pca.shape, "Training label size:", mini_y.shape, "Testing size:", _mini_test_pca.shape, "Testing label size:", mini_test_y.shape)
 
     print("Reading in testset...")
-    _model = models.regressionNeighbors(X_train, y_train, X_test, y_test, k_size=1)
+    _model = models.regressionNeighbors(_mini_train_pca, mini_y, _mini_test_pca, mini_test_y, k_size=1)
     test_x, _ = data.loadTestFeatures(test_file, test_weather_file, train_meta_file) # no y included; ignoring the column name output cuz I already know it
     pca_test_x = pca.incremental_pca(test_x, 3, 3000)
+    del test_x
     test_result = data.test(_model, pca_test_x, is_scipy=True)
     print(test_result.shape)
     data.test_to_csv(test_result,'./submissions/test_proto3.csv')
