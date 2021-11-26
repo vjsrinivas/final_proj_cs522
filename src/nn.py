@@ -18,7 +18,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Local libraries:
-from data import vectorized_result
+from data.data import vectorized_result
 
 class Network(object):
 
