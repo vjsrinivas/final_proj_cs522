@@ -27,3 +27,15 @@ For an automated installation under a majority `pip` environment, you can use: `
 We will primarily work under the `exp.py` file (stands for experiments). Each milestone, new classifier, different and training techniques we might do should have their main execution function defined and called in `exp.py`. 
 
 For example, we have a **Prototype 1** milestone due soon, and to run the final or one iteration of that prototype, you can call `python exp.py --exp proto1`. To add new experiments, edit the `exp.py` file.
+
+## Existing Experiments
+
+**Note 1:** "Test RMSLE" is evaluated on Kaggle servers as the ground truth output are not shared
+
+**Note 2:** "Private" and "Public" are seperate Kaggle scoreboards. "Private" test data composes 51% of the total test data
+
+| Experiment Name      | Description | Validation RMSLE | Test RMSLE (Private/Public) |
+| ----------- | ----------- | ---------- | ---------- |
+| Prototype 1      | Callable with `--exp proto1`. Executes PCA reduction from 13 to 3 dimensions in training and testing set. Experiment runs training for **Regression Tree**.       | 6.4 | 2.717/2.424 |
+| Prototype 2   | Callable with `--exp proto2`. Executes training of SVR (Support Vector Regression) from the scipy package. **This experiment is not used/included in any reports at this time.**        | N/A | N/A |
+| Prototype 3  | Callable with `--exp proto3`. Executes fitting & evaluation of kNN (k=1) for regression. | 2.4 | 3.098/2.704 |
