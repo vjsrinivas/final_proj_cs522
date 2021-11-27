@@ -22,7 +22,6 @@ def run1(data_path):
     val_pred = ada.predict(test)
     val_rmsle = sk_rmsle(test_y, val_pred)
     print("Validation RMSLE:", val_rmsle)
-    return 0
 
     # test after validation
     test_result = data.test(ada, _test, is_scipy=True)
