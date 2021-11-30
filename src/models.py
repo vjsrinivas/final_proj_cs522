@@ -29,7 +29,7 @@ def regressionTrees(x,y, test_data, test_data_y):
     model.fit(x,y)
     pred = model.predict(test_data)
     gt = test_data_y
-    _error = sk_rmsle(pred, gt)
+    _error = np.sqrt(sk_rmsle(pred, gt))
     print("Average Validation RMSLE:", _error)
     return model
 
@@ -38,7 +38,7 @@ def regressionSVM(x,y, test_data, test_data_y):
     model.fit(x,y)
     pred = model.predict(test_data)
     gt = test_data_y
-    _error = sk_rmsle(pred, gt)
+    _error = np.sqrt(sk_rmsle(pred, gt))
     print("Average Validation RMSLE:", _error)
     return model
 
@@ -47,7 +47,7 @@ def regressionNeighbors(x,y,test_data,test_data_y, k_size=5):
     model = _model.fit(x,y)
     pred = model.predict(test_data)
     gt = test_data_y
-    _error = sk_rmsle(pred, gt)
+    _error = np.sqrt(sk_rmsle(pred, gt))
     print("Average Validation RMSLE:", _error)
     return model
 
@@ -57,7 +57,7 @@ def regressionNeighborsLoop(x,y,test_data,test_data_y, k_size=5):
     model = _model.fit(x,y)
     pred = model.predict(test_data)
     gt = test_data_y
-    _error = sk_rmsle(pred, gt)
+    _error = np.sqrt(sk_rmsle(pred, gt))
     t2 = time.time()
     print("Time for fit+test+eval: %f seconds"%(t2-t1))
     print("Average Validation RMSLE:", _error)

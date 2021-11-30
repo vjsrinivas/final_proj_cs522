@@ -6,6 +6,7 @@ from src import pca
 from src import models
 from sklearn.model_selection import train_test_split
 import gc
+from sklearn.preprocessing import StandardScaler
 
 # Due 11/18/2021:
 def run1(data_path):
@@ -44,6 +45,10 @@ def run1(data_path):
         data.saveCache( np.concatenate([x,np.expand_dims(y,axis=1)], axis=1), _data_cache)
         data.saveCache(meta, _meta_cache)
     
+    scaler = StandardScaler()
+    scaler.fit(x)
+    x = scaler.transform(x)
+
     gc.collect()
 
     meta = np.delete(meta, 3) # remove "meter_reading from meta labels"

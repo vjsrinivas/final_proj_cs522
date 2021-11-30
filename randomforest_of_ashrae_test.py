@@ -8,83 +8,13 @@ Original file is located at
 
 # Reduce Memory Footprint
 """
-
-import gdown
-ashrae_url = "https://drive.google.com/uc?id=1UWf5PYpIPv5TJnOE3eVZOekBiryBWobu"
-output = "ashrae.zip"
-gdown.download(ashrae_url, output, quiet=False)
-
-# Unzip ASHRAE data:
-!unzip ashrae.zip
-!rm -rf ashrae.zip
-
-# Load in training data:
 import pandas as pd
 import numpy as np
+import scipy
+from sklearn.metrics import mean_squared_log_error
+from data import data
 
-train = pd.read_csv('train.csv')
-# Find the current data footprint of train dataframe:
-train.info()
-print()
-
-# Reduce datatype precision to lower memory:
-#print(np.max(train["building_id"])) # maximum number is 1448 so we can fit it in int32
-#print(np.max(train["meter"])) # to uint8 (range from 1 to 3 lol)
-#print(np.max(train["meter_reading"])) # leave as float64
-train["building_id"] = train["building_id"].astype(np.int32)
-train["meter"] = train["meter"].astype(np.uint8)
-
-# new memory footprint:
-train.info()
-
-# Load in testing data:
-test = pd.read_csv('test.csv')
-# Find the current data footprint of train dataframe:
-test.info()
-print()
-
-# Reduce datatype precision to lower memory:
-#print(np.max(test["row_id"])) # maximum number is 41 mil so we can fit it in int32
-#print(np.max(test["building_id"])) # max number is 1448 so int32
-#print(np.max(test["meter"])) # to uint8 (range from 1 to 3 lol)
-test["row_id"] = test["row_id"].astype(np.int32)
-test["building_id"] = test["building_id"].astype(np.int32)
-test["meter"] = test["meter"].astype(np.uint8)
-
-# new memory footprint:
-test.info() # reduced 1.2 GB to 676 MB
-
-weather_train = pd.read_csv('weather_train.csv')
-# Find the current data footprint of train dataframe:
-weather_train.info()
-# no point in reducing 9.6 MB memory footprint...
-print()
-556
-weather_test = pd.read_csv('weather_test.csv')
-weather_test.info() # 19 MB memory
-print()
-
-meta = pd.read_csv('building_metadata.csv')
-meta.info() # KB...
-
-"""# Visualization"""
-
-# TODO...
-train
-
-weather_train
-
-"""# Load Pre-Processed Data (Cleaned Up Data)"""
-
-import gdown
-import pandas as pd
-import numpy as np
-
-ashrae_url = "https://drive.google.com/uc?id=1UlIpiR3Y6XiSWLhJGuaogrFgYsJns2FN"
-output = "cleaned_ashrae.csv"
-gdown.download(ashrae_url, output, quiet=False)
-
-clean_train = pd.read_csv('cleaned_ashrae.csv') # with ALL 14 features
+clean_train = pd.read_csv('colab_data.csv') # with ALL 14 features
 
 # reduce memory:
 clean_train['timestamp'] = clean_train['timestamp'].astype(np.int64)
@@ -120,9 +50,9 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 scaler.fit(X_train)
+X_test_scaled = scaler.transform(X_test)
 
 X_train_scaled = scaler.transform(X_train)
-X_test_scaled = scaler.transform(X_test)
 
 from sklearn.ensemble import RandomForestRegressor
 model = RandomForestRegressor(n_estimators = 20, random_state =30)
@@ -160,4 +90,32 @@ def rmsle_metric(Y_test,Y_predict):
   return rmsle
 
 rmsle_value = rmsle_metric(Y_test,Y_predict)
-rmsle_value
+print(rmsle_value)
+rmsle_metric = np.sqrt(mean_squared_log_error(Y_test,Y_predict))
+print(rmsle_value)
+
+del Y_test
+del Y_predict
+del X_test_scaled
+del X_test
+del X_train
+del clean_train
+# ==================================
+# TESTING:
+
+clean_test = pd.read_csv('colab_data_test.csv') # with ALL 14 features
+
+# reduce memory:
+clean_test['timestamp'] = clean_test['timestamp'].astype(np.int64)
+clean_test['meter'] = clean_test['meter'].astype(np.uint8)
+clean_test['site_id'] = clean_test['site_id'].astype(np.int64)
+clean_test['primary_use'] = clean_test['primary_use'].astype(np.int64)
+
+clean_test = clean_test.drop(columns='floor_count')
+clean_test = clean_test.drop(columns='year_built')
+
+test_X = clean_test.to_numpy()
+X_test_scaled = scaler.transform(test_X)
+test_Y_predict = model.predict(X_test_scaled)
+print(test_Y_predict.shape)
+data.test_to_csv(test_Y_predict, 'submissions/test_random_regression_tree.csv')
