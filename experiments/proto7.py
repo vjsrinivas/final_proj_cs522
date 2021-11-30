@@ -9,23 +9,33 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_log_error as sk_rmsle
 from sklearn.ensemble import AdaBoostRegressor
 from src import models
+from sklearn.preprocessing import StandardScaler
 
 def run1(data_path):
     x, y, _test = loadTrainData(data_path) # NO PCA!
-    train, test, train_y, test_y = train_test_split(x, y, test_size=0.3, random_state=42)
     
+    scaler = StandardScaler()
+    scaler.fit(x)
+    x = scaler.transform(x)
+    _test = scaler.transform(_test)
+    print(_test.shape)
+
+    train, test, train_y, test_y = train_test_split(x, y, test_size=0.3, random_state=42)
+
+
     print("Fitting...")
-    ada=AdaBoostRegressor(DecisionTreeRegressor(max_depth=5))
+    ada=AdaBoostRegressor(DecisionTreeRegressor(max_depth=3), n_estimators = 1000)
     ada.fit(train,train_y)
 
     print("Validating...")
     val_pred = ada.predict(test)
-    val_rmsle = sk_rmsle(test_y, val_pred)
+    val_rmsle = np.sqrt(sk_rmsle(test_y, val_pred))
     print("Validation RMSLE:", val_rmsle)
+    del train, test, train_y, test_y,x,y
 
     # test after validation
     test_result = data.test(ada, _test, is_scipy=True)
-    data.test_to_csv(test_result,'./submissions/test_adaboost_v1.csv')
+    data.test_to_csv(test_result,'./submissions/test_adaboost_v1_scalar.csv')
 
 def loadTrainData(data_path):
     train_file = os.path.join(data_path, 'train.csv')
