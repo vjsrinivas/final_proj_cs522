@@ -5,7 +5,8 @@ import src.fld
 import argparse
 import os
 from data import data
-from experiments import proto1, proto2, proto3
+
+from experiments import proto1, proto2, proto3, proto4, proto5, proto6
 from experiments import proto7
 
 def parseArgs():
@@ -22,6 +23,12 @@ def expRun(exp_name:str, *exp_kwargs):
         proto2.run1(*exp_kwargs)
     elif exp_name == 'proto3': # knn
         proto3.run1(*exp_kwargs)
+    elif exp_name == 'proto4': # nn try 1
+        proto4.run1(*exp_kwargs)
+    elif exp_name == 'proto5':
+        proto5.run1(*exp_kwargs)
+    elif exp_name == 'proto6':
+        proto6.run1(*exp_kwargs)
     elif exp_name == 'adaboost_v1':
         proto7.run1(*exp_kwargs)
     else:
