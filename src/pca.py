@@ -13,8 +13,19 @@ def pca(data, d):
 
 def incremental_pca(data, d, batch_size):
     pcaObject = IncrementalPCA(n_components=d, batch_size=batch_size)
-    X_sparse = sparse.csr_matrix(data)
-    return pcaObject.fit_transform(X_sparse)
+    chunk_size=10000000
+    chunks_loop = data.shape[0] // chunk_size
+    print(data.shape[0]/chunk_size, chunks_loop)
+    new_data = np.ndarray((data.shape[0], d))
+
+    for i in range(0, chunks_loop):
+        print(i/chunks_loop)
+        _temp = pcaObject.partial_fit(data[i*chunk_size : (i+1)*chunk_size, :])
+        new_data[i*chunk_size : (i+1)*chunk_size, :] = _temp.fit_transform(data[i*chunk_size : (i+1)*chunk_size, :])
+    return new_data
+
+    #X_sparse = sparse.csr_matrix(data)
+    #return pcaObject.fit_transform(X_sparse)
 
 def scratchpca(data, d):
     cov_mat = np.cov(data.T)

@@ -269,3 +269,83 @@ def vectorized_result(j, num_class=10):
     e = np.zeros((num_class, 1))
     e[j] = 1.0
     return e
+
+# temp:
+def saveCustomDataset():
+    train = np.load('data_cache.npy', allow_pickle=True)
+    meta = list(np.load('meta_cache.npy', allow_pickle=True))
+    y_out = meta.pop(3)
+    meta.append(y_out)
+
+    with open('colab_data.csv', 'w') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=meta)
+        writer.writeheader()
+
+        for i in tqdm(range(train.shape[0])):
+            writer.writerow({
+                                'building_id':train[i,0],
+                                'meter': train[i,1],
+                                'timestamp': train[i,2],
+                                'site_id': train[i,3],
+                                'primary_use': train[i,4],
+                                'square_feet': train[i,5],
+                                'year_built': train[i,6],
+                                'floor_count': train[i,7],
+                                'air_temperature': train[i,8],
+                                'cloud_coverage': train[i,9],
+                                'dew_temperature': train[i, 10],
+                                'precip_depth_1_hr': train[i,11],
+                                'sea_level_pressure': train[i,12],
+                                'wind_direction': train[i,13],
+                                'wind_speed': train[i,14],
+                                'meter_reading': train[i,15]
+                            }) 
+    return 0
+
+def saveCustomDataset2():
+    data_path = './data/ashrae/'
+    meta = list(np.load('meta_cache.npy', allow_pickle=True))
+    train_file = os.path.join(data_path, 'train.csv')
+    train_meta_file = os.path.join(data_path, 'building_metadata.csv')
+    train_weather_file = os.path.join(data_path, 'weather_train.csv') # features for training
+    test_file = os.path.join(data_path, 'test.csv')
+    test_weather_file = os.path.join(data_path, 'weather_test.csv') # features for testing
+    test_x, _ = loadTestFeatures(test_file, test_weather_file, train_meta_file) # no y included; ignoring the column name output cuz I already know it
+    meta.pop(3)
+    #y_label = meta.pop(3)
+    #meta.append(y_label)
+    print(meta)
+    
+    with open('colab_data_test.csv', 'w') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=meta)
+        writer.writeheader()
+
+        for i in tqdm(range(test_x.shape[0])):
+            writer.writerow({
+                                'building_id':test_x[i,0],
+                                'meter': test_x[i,1],
+                                'timestamp': test_x[i,2],
+                                'site_id': test_x[i,3],
+                                'primary_use': test_x[i,4],
+                                'square_feet': test_x[i,5],
+                                'year_built': test_x[i,6],
+                                'floor_count': test_x[i,7],
+                                'air_temperature': test_x[i,8],
+                                'cloud_coverage': test_x[i,9],
+                                'dew_temperature': test_x[i, 10],
+                                'precip_depth_1_hr': test_x[i,11],
+                                'sea_level_pressure': test_x[i,12],
+                                'wind_direction': test_x[i,13],
+                                'wind_speed': test_x[i,14],
+                                #'meter_reading': train[i,15]
+                            }) 
+
+    # From the sparsity graph, we should probably remove floor count:
+    #mini_train = np.delete(mini_train, np.argwhere(meta=='floor_count'), axis=1)
+    #meta = np.delete(meta, np.argwhere(meta=='floor_count'))
+    
+    # From the sparsity graph, we should probably remove floor count:
+    #mini_train = np.delete(mini_train, np.argwhere(meta=='year_built'), axis=1)
+
+#saveCustomDataset()
+#saveCustomDataset2()

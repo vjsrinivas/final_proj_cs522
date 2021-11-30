@@ -1,15 +1,43 @@
-from math import e
-import os
+from data import data
 import numpy as np
-from data import data 
-from src import pca
-from src import models
-from sklearn.model_selection import train_test_split
+import os
 import gc
+from src import pca
+from tqdm import tqdm
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import mean_squared_log_error as sk_rmsle
+from sklearn.ensemble import AdaBoostRegressor
+from src import models
 from sklearn.preprocessing import StandardScaler
 
-# Due 11/18/2021:
 def run1(data_path):
+    x, y, _test = loadTrainData(data_path) # NO PCA!
+    
+    scaler = StandardScaler()
+    scaler.fit(x)
+    x = scaler.transform(x)
+    _test = scaler.transform(_test)
+    print(_test.shape)
+
+    train, test, train_y, test_y = train_test_split(x, y, test_size=0.3, random_state=42)
+
+
+    print("Fitting...")
+    ada=AdaBoostRegressor(DecisionTreeRegressor(max_depth=3), n_estimators = 1000)
+    ada.fit(train,train_y)
+
+    print("Validating...")
+    val_pred = ada.predict(test)
+    val_rmsle = np.sqrt(sk_rmsle(test_y, val_pred))
+    print("Validation RMSLE:", val_rmsle)
+    del train, test, train_y, test_y,x,y
+
+    # test after validation
+    test_result = data.test(ada, _test, is_scipy=True)
+    data.test_to_csv(test_result,'./submissions/test_adaboost_v1_scalar.csv')
+
+def loadTrainData(data_path):
     train_file = os.path.join(data_path, 'train.csv')
     train_meta_file = os.path.join(data_path, 'building_metadata.csv')
     train_weather_file = os.path.join(data_path, 'weather_train.csv') # features for training
@@ -45,10 +73,6 @@ def run1(data_path):
         data.saveCache( np.concatenate([x,np.expand_dims(y,axis=1)], axis=1), _data_cache)
         data.saveCache(meta, _meta_cache)
     
-    scaler = StandardScaler()
-    scaler.fit(x)
-    x = scaler.transform(x)
-
     gc.collect()
 
     meta = np.delete(meta, 3) # remove "meter_reading from meta labels"
@@ -59,38 +83,20 @@ def run1(data_path):
     mini_train, mini_y = x[mini_train_idx], y[mini_train_idx]
     print("Mini training size:", mini_train.shape, mini_y.shape)
 
-    # Graph out how sparse every feature is:
-    #data.featureSparsity(mini_train, meta) # disable fill nan
-    
     # From the sparsity graph, we should probably remove floor count:
     mini_train = np.delete(mini_train, np.argwhere(meta=='floor_count'), axis=1)
-    meta = np.delete(meta, np.argwhere(meta=='floor_count'))
+    #meta = np.delete(meta, np.argwhere(meta=='floor_count'))
     
     # From the sparsity graph, we should probably remove floor count:
     mini_train = np.delete(mini_train, np.argwhere(meta=='year_built'), axis=1)
-    meta = np.delete(meta, np.argwhere(meta=='year_built'))
+    #meta = np.delete(meta, np.argwhere(meta=='year_built'))
     
-    # remove all rows with NaN:
-    '''
-    _mask = ~np.isnan(mini_train).any(axis=1)
-    mini_train = mini_train[_mask, :]
-    mini_y = mini_y[_mask]
-    assert mini_train.shape[0] == mini_y.shape[0]
-    '''
+    print("Testing")
+    test_x, _ = data.loadTestFeatures(test_file, test_weather_file, train_meta_file) # no y included; ignoring the column name output cuz I already know it
+    test_x = np.delete(test_x, np.argwhere(meta=='floor_count'), axis=1)
+    test_x = np.delete(test_x, np.argwhere(meta=='year_built'), axis=1)
+    
+    meta = np.delete(meta, np.argwhere(meta=='floor_count'))
+    meta = np.delete(meta, np.argwhere(meta=='year_built'))
 
-    # reduce complexity of data:
-    _mini_train_pca = pca.pca(mini_train, d=3)
-
-    # memory management:
-    del mini_train
-
-    _mini_train_pca, _mini_test_pca, mini_y, mini_test_y = train_test_split(_mini_train_pca, mini_y, test_size=0.1, random_state=42)
-    print("Training size: ", _mini_train_pca.shape, "Training label size:", mini_y.shape, "Testing size:", _mini_test_pca.shape, "Testing label size:", mini_test_y.shape)
-
-    '''
-    if _mini_train_pca.shape[0] > 1000000:
-        data.pca_3d_plot(_mini_train_pca)
-    '''
-    # run classifier: regression trees:
-    print("Fitting....")
-    _model = models.regressionSVM(_mini_train_pca, mini_y, _mini_test_pca, mini_test_y)
+    return mini_train, y, test_x # train_x, train_y, test_x

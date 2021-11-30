@@ -8,6 +8,7 @@ from src import models
 from sklearn.model_selection import train_test_split
 import gc
 from sklearn.model_selection import KFold
+from sklearn.preprocessing import StandardScaler
 
 # Due 11/18/2021:
 def run1(data_path):
@@ -16,7 +17,7 @@ def run1(data_path):
     train_weather_file = os.path.join(data_path, 'weather_train.csv') # features for training
     test_file = os.path.join(data_path, 'test.csv')
     test_weather_file = os.path.join(data_path, 'weather_test.csv') # features for testing
-    do_kfold_testing = True
+    do_kfold_testing = False
 
     _data_cache = 'data_cache.npy'
     _meta_cache = 'meta_cache.npy'
@@ -47,6 +48,10 @@ def run1(data_path):
         data.saveCache( np.concatenate([x,np.expand_dims(y,axis=1)], axis=1), _data_cache)
         data.saveCache(meta, _meta_cache)
     
+    scaler = StandardScaler()
+    scaler.fit(x)
+    x = scaler.transform(x)
+
     gc.collect()
 
     meta = np.delete(meta, 3) # remove "meter_reading from meta labels"
@@ -122,9 +127,18 @@ def run1(data_path):
         print("Running test...")
         print("Reading in testset...")
         _model = models.regressionNeighbors(_mini_train_pca, mini_y, _mini_test_pca, mini_test_y, k_size=1)
+        del _mini_train_pca
+        del _mini_test_pca
+        del mini_y
+        del mini_test_y 
         print("Fitting")
         test_x, _ = data.loadTestFeatures(test_file, test_weather_file, train_meta_file) # no y included; ignoring the column name output cuz I already know it
-        pca_test_x = pca.incremental_pca(test_x, 3, 3000)
+        test_x = scaler.transform(test_x)
+        print("Converting with incremental PCA")
+        print(test_x[0])
+        pca_test_x = pca.incremental_pca(test_x, 3, 16)
+        print(pca_test_x[0])
+        #pca_test_x = pca.incremental_pca(test_x, 3, 16)
         del test_x
         test_result = data.test(_model, pca_test_x, is_scipy=True)
-        data.test_to_csv(test_result,'./submissions/test_proto3.csv')
+        data.test_to_csv(test_result,'./submissions/test_proto3_scalar.csv')
