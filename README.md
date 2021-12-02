@@ -34,11 +34,11 @@ For example, we have a **Prototype 1** milestone due soon, and to run the final 
 
 **Note 2:** "Private" and "Public" are seperate Kaggle scoreboards. "Private" test data composes 51% of the total test data
 
-| Experiment Name | Alternative Name  | Description | Validation RMSLE | Test RMSLE (Private/Public) |
-| ----------- | ------------ | ----------- | ---------- | ---------- |
-| Prototype 1  |  (PCA) Regression Tree  | Callable with `--exp proto1`. Executes PCA reduction from 13 to 3 dimensions in training and testing set. Experiment runs training for **Regression Tree**.       | 2.5 | 2.717/2.424 |
-| Prototype 2 |  (PCA SVM Regression  | Callable with `--exp proto2`. Executes training of SVR (Support Vector Regression) from the scipy package. **This experiment is not used/included in any reports at this time.**        | N/A | N/A |
-| Prototype 3 |  (PCA) kNN k=1  | Callable with `--exp proto3`. Executes fitting & evaluation of kNN (k=1) for regression. | 1.5 | 3.098/2.704 |
-| Random_of_ashrae_test |  (13) Random Forest  | Callable with `randomforest_of_ashrae_test.py` Executes fitting & evaluation of Random Forest for regression. | 0.8 | 1.758/1.363 |
-| Prototype 6 |  (13) MLP Keras   | Callable with `--exp proto6`. Executes training & evaluation of neural network for regression. | 2.2 | 2.306/2.239 |
-| Prototype 7 |  (13) AdaBoost with Regression Tree   | Callable with `--exp adaboost_v1`. Executes fitting & evaluation of AdaBoost with Regression Trees | 4.1 | 4.559/4.129 |
+| Experiment Name | Alternative Name  | Description | Validation RMSLE | R2 Score | Test RMSLE (Private/Public) |
+| ----------- | ------------ | ----------- | ---------- | ---------- | ---------- |
+| Prototype 1  |  (PCA) Regression Tree  | Callable with `--exp proto1`. Executes PCA reduction from 13 to 3 dimensions in training and testing set. Experiment runs training for **Regression Tree**.       | 2.5 | .101441 | 2.717/2.424 |
+| Prototype 2 |  (PCA SVM Regression  | Callable with `--exp proto2`. Executes training of SVR (Support Vector Regression) from the scipy package. **This experiment is not used/included in any reports at this time.**        | N/A | N/A |N/A |
+| Prototype 3 |  (PCA) kNN k=1  | Callable with `--exp proto3`. Executes fitting & evaluation of kNN (k=1) for regression. | 1.5 | 0.14192 | 3.098/2.704 |
+| Random_of_ashrae_test |  (13) Random Forest  | Callable with `randomforest_of_ashrae_test.py` Executes fitting & evaluation of Random Forest for regression. | 0.8 | N/A | 1.758/1.363 |
+| Prototype 6 |  (13) MLP Keras   | Callable with `--exp proto6`. Executes training & evaluation of neural network for regression. | 2.2 | -0.0001895 | 2.306/2.239 |
+| Prototype 7 |  (13) AdaBoost with Regression Tree   | Callable with `--exp adaboost_v1`. Executes fitting & evaluation of AdaBoost with Regression Trees | 4.1 | -3.587e-05 | 4.559/4.129 |
