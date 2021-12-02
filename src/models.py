@@ -5,6 +5,7 @@ import sklearn
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_log_error as sk_rmsle
+from sklearn.metrics import r2_score as sk_r2score
 from sklearn.pipeline import make_pipeline
 from sklearn.svm import SVR
 from sklearn.preprocessing import StandardScaler
@@ -31,6 +32,8 @@ def regressionTrees(x,y, test_data, test_data_y):
     gt = test_data_y
     _error = np.sqrt(sk_rmsle(pred, gt))
     print("Average Validation RMSLE:", _error)
+    _r2 = sk_r2score(gt, pred)
+    print("R2 Score:", _r2)
     return model
 
 def regressionSVM(x,y, test_data, test_data_y):
@@ -40,6 +43,8 @@ def regressionSVM(x,y, test_data, test_data_y):
     gt = test_data_y
     _error = np.sqrt(sk_rmsle(pred, gt))
     print("Average Validation RMSLE:", _error)
+    _r2 = sk_r2score(gt, pred)
+    print("R2 Score:", _r2)
     return model
 
 def regressionNeighbors(x,y,test_data,test_data_y, k_size=5):
@@ -49,6 +54,8 @@ def regressionNeighbors(x,y,test_data,test_data_y, k_size=5):
     gt = test_data_y
     _error = np.sqrt(sk_rmsle(pred, gt))
     print("Average Validation RMSLE:", _error)
+    _r2 = sk_r2score(gt, pred)
+    print("R2 Score:", _r2)
     return model
 
 def regressionNeighborsLoop(x,y,test_data,test_data_y, k_size=5):
@@ -61,4 +68,6 @@ def regressionNeighborsLoop(x,y,test_data,test_data_y, k_size=5):
     t2 = time.time()
     print("Time for fit+test+eval: %f seconds"%(t2-t1))
     print("Average Validation RMSLE:", _error)
+    _r2 = sk_r2score(gt, pred)
+    print("R2 Score:", _r2)
     return _error
