@@ -7,6 +7,7 @@ from src import models
 from sklearn.model_selection import train_test_split
 import gc
 from sklearn.preprocessing import StandardScaler
+from src import kernalpca
 
 # Due 11/18/2021:
 def run1(data_path):
@@ -82,6 +83,10 @@ def run1(data_path):
 
     # reduce complexity of data:
     _mini_train_pca = pca.pca(mini_train, d=3)
+    print("Running PCA")
+    _mini_train_pca = pca.pca(mini_train, d=3)
+    # _mini_train_pca = kernalpca.kernalpca(mini_train, d=3)
+    print("Finished PCA")
 
     # memory management:
     del mini_train
