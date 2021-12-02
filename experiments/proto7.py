@@ -14,12 +14,13 @@ from sklearn.preprocessing import StandardScaler
 def run1(data_path):
     x, y, _test = loadTrainData(data_path) # NO PCA!
     
+    '''
     scaler = StandardScaler()
     scaler.fit(x)
     x = scaler.transform(x)
     _test = scaler.transform(_test)
     print(_test.shape)
-
+    '''
     train, test, train_y, test_y = train_test_split(x, y, test_size=0.3, random_state=42)
 
 

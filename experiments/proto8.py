@@ -61,43 +61,133 @@ def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
     #scaler_int = np.linalg.norm(y)
     #y = y / scaler_int
     
-    train, test, train_y, test_y = train_test_split(x, y, test_size=0.3, random_state=42)
+    train, test, train_y, test_y = train_test_split(x, y, test_size=0.3, random_state=42)   
+    #scaler_train_y = np.linalg.norm(train_y)
+    #train_y = train_y / scaler_train_y
 
-    model = tf.keras.Sequential([
-        Dense(13, activation='relu'),
-        Dense(256, activation='relu'),
-        Dense(256, activation='relu'),
-        Dense(128, activation='relu'),
-        Dense(128, activation='relu'),
-        #Dropout(0.2),
-        Dense(64, activation='relu'),
-        Dense(32, activation='relu'),
-        Dense(16, activation='relu'),
-        Dense(8, activation='relu'),
-        #Dropout(0.2),
-        Dense(4, activation='relu'),
-        Dense(2, activation='relu'),
-        Dense(1)
-    ])
-    model.compile(optimizer='adam',
-                loss=tf.keras.losses.MeanSquaredError(),)
-    #            metrics=tf.keras.losses.MeanSquaredError())
-    
-    '''
-    re_model = keras.models.load_model('experiments/mlp', compile=False)
-    _preds = re_model.predict(_test, batch_size=512)
-    _preds = np.squeeze(_preds)
-    data.test_to_csv(_preds, 'submissions/test_proto6_keras.csv')
-    '''
-    
-    model.fit(train, train_y, epochs=4, batch_size = 512, validation_data=(test, test_y), validation_batch_size=64)
-    
-    # validation set RMSLE:
-    val_preds = model.predict(test, batch_size=512)
-    _val = np.sqrt(sk_rmsle(test_y, val_preds))
-    print("Validation error:", _val)
+    #scaler_test_y = np.linalg.norm()
 
-    model.save('mlp')
+    #for i in range(train.shape[1]):
+    #    train_norm[:,i] = train_norm[:,i] / np.linalg.norm(train[:,i])
+    
+    #for i in range(_test.shape[1]):
+    #    _test[:,i] = _test[:,i] / np.linalg.norm(_test[:,i])
+
+    # extra preprocessing done here:
+    _train_pca = ASHRAEDataset(train, train_y, use_cuda=True)
+    _val_pca = ASHRAEDataset(test, test_y, use_cuda=True)
+    _test_pca = ASHRAEDataset(_test, [], use_cuda=True, no_y=True)
+    print("Train size:", len(_train_pca))
+    print("Val size:", len(_val_pca))
+    print("Test size:", len(_test_pca))
+    
+    train_loader = DataLoader(_train_pca, batch_size=1000000)
+    val_loader = DataLoader(_val_pca, batch_size=1000000)
+    test_load = DataLoader(_test_pca, batch_size=1000000)
+
+    # define model
+    model = createModel(13,1) # full dimensions
+    
+    if os.path.exists('nn_proto6.pt'):
+        model.load_state_dict( torch.load('nn_proto6.pt') )
+        model = model.cuda()
+    else:
+        #model = createSmallestModel()
+        opt = torch.optim.SGD(model.parameters(), lr, momentum)
+        loss = nn.MSELoss()
+        #loss = RMSELoss()
+
+        model = model.cuda()
+        loss = loss.cuda()
+        model.train()
+        print(model)
+
+        for epoch in range(epochs):
+            print("Epoch %i"%(epoch))
+            avg_epoch_loss = 0
+            for i,(x,y) in enumerate(tqdm(train_loader)):
+                opt.zero_grad()
+                preds = model(x)
+                
+                #for j in range(x.shape[0]):
+                    #print(preds[j], x[j])
+                #print(y[0], y[1000], y[12000])
+                #preds *= scaler_int
+                #preds = torch.squeeze(preds)
+                y = torch.unsqueeze(y, axis=1)
+                #_loss = torch.sqrt( loss(y, preds) )
+                _loss = loss(y, preds)
+                _loss.backward()
+                avg_epoch_loss = (_loss + avg_epoch_loss)/(i+1)
+                opt.step()
+            print("Average loss: %f"%(avg_epoch_loss))
+            print("====================")
+            #input()
+
+            print("Validating at epoch %i..."%(epoch))
+            avg_rmsle = 0
+            with torch.no_grad():
+                model.eval()
+                for i, (x,y) in enumerate(tqdm(val_loader)):
+                    pred = model(x)
+                    y = torch.unsqueeze(y, axis=1)
+                    #pred = torch.squeeze(pred)
+                    #pred *= scaler_int
+                    _pred = pred.detach().cpu().numpy()
+                    _y = y.detach().cpu().numpy()
+                    #_pred *= scaler_int
+                    #_y *= scaler_int
+                    _error = np.sqrt(sk_rmsle(_pred, _y))
+                    #print(_error)
+                    avg_rmsle += _error
+            #print(pred[0])
+            print("Average RMSLE: %f"%(avg_rmsle/i))
+
+            model.train()
+
+        torch.save(model.state_dict(), 'nn_proto6.pt')
+
+    _out = np.ndarray((len(_test_pca)))
+    with torch.no_grad():
+        for i, x in enumerate(tqdm(test_load)):
+            #print(x)
+            _pred = model(x)
+            _out[i*1000000:(i+1)*1000000] = np.squeeze(_pred.cpu().numpy())
+
+    data.test_to_csv(_out, 'submissions/test_proto6.csv')
+
+def createModel(in_dim, out_dim):
+    '''
+    _model = nn.Sequential(OrderedDict([
+        ('dense_1', nn.Linear(in_dim, in_dim//2) ),
+        ('relu_1', nn.LeakyReLU()),
+        ('dense_2', nn.Linear(in_dim//2, in_dim//4)),
+        ('relu_2', nn.LeakyReLU()),
+        ('dense_3', nn.Linear(in_dim//4, in_dim//6)),
+        ('relu_3', nn.LeakyReLU()),
+        ('dense_4', nn.Linear(in_dim//6, out_dim)),
+        ('relu_4', nn.LeakyReLU())
+    ]))
+    '''
+
+    _model = nn.Sequential(OrderedDict([
+        ('dense_1', nn.Linear(in_dim, in_dim//2) ),
+        ('relu_1', nn.ReLU()),
+        ('dense_2', nn.Linear(in_dim//2, in_dim//4)),
+        ('relu_2', nn.ReLU()),
+        ('dense_3', nn.Linear(in_dim//4, in_dim//6)),
+        ('relu_3', nn.ReLU()),
+        ('dense_4', nn.Linear(in_dim//6, 1)),
+        #('segmoid_2', nn.Sigmoid()),
+        #('dense_2', nn.Linear(in_dim//2, in_dim//4)),
+        #('segmoid_2', nn.Sigmoid()),
+        #('dense_3', nn.Linear(in_dim//4, in_dim//6)),
+        #('segmoid_3', nn.Sigmoid()),
+        #('dense_4', nn.Linear(in_dim//6, out_dim)),
+        #('segmoid_4', nn.Sigmoid())
+    ]))
+
+    return _model
 
 def loadTrainData(data_path):
     train_file = os.path.join(data_path, 'train.csv')
