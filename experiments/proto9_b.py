@@ -1,16 +1,18 @@
-from data import data
-import numpy as np
-import os
-import gc
-from src import pca
-from tqdm import tqdm
-from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.metrics import mean_squared_log_error as sk_rmsle
-from sklearn.ensemble import AdaBoostRegressor
-from src import models
-from sklearn.preprocessing import StandardScaler
+# LINEAR REGRESSION
+# 13 features
 
+from math import e
+import os
+import numpy as np
+from data import data 
+from src import pca
+from src import models
+from sklearn.model_selection import train_test_split
+import gc
+from sklearn.preprocessing import StandardScaler
+from src import kernalpca
+
+# Due 11/18/2021:
 def run1(data_path):
     train_file = os.path.join(data_path, 'train.csv')
     train_meta_file = os.path.join(data_path, 'building_metadata.csv')
@@ -83,9 +85,17 @@ def run1(data_path):
     _mini_train_pca, _mini_test_pca, mini_y, mini_test_y = train_test_split(_mini_train_pca, mini_y, test_size=0.1, random_state=42)
     print("Training size: ", _mini_train_pca.shape, "Training label size:", mini_y.shape, "Testing size:", _mini_test_pca.shape, "Testing label size:", mini_test_y.shape)
 
+    '''
+    print("PCA on training data")
+    if _mini_train_pca.shape[0] > 100000:
+        data.pca_3d_plot(_mini_train_pca[:100000,:])
+    else:
+        data.pca_3d_plot(_mini_train_pca)
+    '''
+
     # run classifier: regression trees:
     print("Fitting....")
-    _model = models.adaBoostRegression(_mini_train_pca, mini_y, _mini_test_pca, mini_test_y)
+    _model = models.linearRegression(_mini_train_pca, mini_y, _mini_test_pca, mini_test_y)
     del _mini_train_pca
     del mini_y
     del _mini_test_pca
@@ -107,5 +117,5 @@ def run1(data_path):
 
     test_result = data.test(_model, test_x, is_scipy=True)
     #np.save('test_out_example.npy', test_result)
-    data.test_to_csv(test_result,'./submissions/test_adaboost_v1.csv')
+    data.test_to_csv(test_result,'./submissions/test_proto9b.csv')
     
