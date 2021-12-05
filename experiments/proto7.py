@@ -25,7 +25,8 @@ def run1(data_path):
 
 
     print("Fitting...")
-    ada=AdaBoostRegressor(DecisionTreeRegressor(max_depth=3), n_estimators = 1000)
+    ada = DecisionTreeRegressor(max_depth=15)
+    #ada=AdaBoostRegressor(DecisionTreeRegressor(max_depth=3), n_estimators = 1)
     ada.fit(train,train_y)
 
     print("Validating...")

@@ -156,35 +156,27 @@ def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
 
     data.test_to_csv(_out, 'submissions/test_proto6.csv')
 
-def createModel(in_dim, out_dim):
-    '''
+def createModel():
     _model = nn.Sequential(OrderedDict([
-        ('dense_1', nn.Linear(in_dim, in_dim//2) ),
-        ('relu_1', nn.LeakyReLU()),
-        ('dense_2', nn.Linear(in_dim//2, in_dim//4)),
-        ('relu_2', nn.LeakyReLU()),
-        ('dense_3', nn.Linear(in_dim//4, in_dim//6)),
-        ('relu_3', nn.LeakyReLU()),
-        ('dense_4', nn.Linear(in_dim//6, out_dim)),
-        ('relu_4', nn.LeakyReLU())
-    ]))
-    '''
-
-    _model = nn.Sequential(OrderedDict([
-        ('dense_1', nn.Linear(in_dim, in_dim//2) ),
+        ('dense_1', nn.Linear(13,256) ),
         ('relu_1', nn.ReLU()),
-        ('dense_2', nn.Linear(in_dim//2, in_dim//4)),
+        ('dense_2', nn.Linear(256,256) ),
         ('relu_2', nn.ReLU()),
-        ('dense_3', nn.Linear(in_dim//4, in_dim//6)),
+        ('dense_3', nn.Linear(256,128) ),
         ('relu_3', nn.ReLU()),
-        ('dense_4', nn.Linear(in_dim//6, 1)),
-        #('segmoid_2', nn.Sigmoid()),
-        #('dense_2', nn.Linear(in_dim//2, in_dim//4)),
-        #('segmoid_2', nn.Sigmoid()),
-        #('dense_3', nn.Linear(in_dim//4, in_dim//6)),
-        #('segmoid_3', nn.Sigmoid()),
-        #('dense_4', nn.Linear(in_dim//6, out_dim)),
-        #('segmoid_4', nn.Sigmoid())
+        ('dense_4', nn.Linear(128,64) ),
+        ('relu_4', nn.ReLU()),
+        ('dense_5', nn.Linear(64,32) ),
+        ('relu_5', nn.ReLU()),
+        ('dense_6', nn.Linear(32,16) ),
+        ('relu_6', nn.ReLU()),
+        ('dense_7', nn.Linear(16,8) ),
+        ('relu_7', nn.ReLU()),
+        ('dense_8', nn.Linear(8,4) ),
+        ('relu_8', nn.ReLU()),
+        ('dense_9', nn.Linear(4,2) ),
+        ('relu_9', nn.ReLU()),
+        ('dense_10', nn.Linear(2,1) ),
     ]))
 
     return _model

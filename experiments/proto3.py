@@ -141,4 +141,4 @@ def run1(data_path):
         #pca_test_x = pca.incremental_pca(test_x, 3, 16)
         del test_x
         test_result = data.test(_model, pca_test_x, is_scipy=True)
-        data.test_to_csv(test_result,'./submissions/test_proto3_scalar.csv')
+        data.test_to_csv(test_result,'./submissions/test_proto3.csv')

@@ -25,8 +25,8 @@ def rmsle(y, pred):
     return np.sqrt( (1/n) * np.sum( np.power( np.log(y+1) - np.log(pred+1),  ) ) )
 
 # regression models:
-def regressionTrees(x,y, test_data, test_data_y):
-    model = DecisionTreeRegressor(max_depth=3)
+def regressionTrees(x,y, test_data, test_data_y, max_depth=3):
+    model = DecisionTreeRegressor(max_depth=max_depth)
     model.fit(x,y)
     pred = model.predict(test_data)
     gt = test_data_y

@@ -67,24 +67,13 @@ def run1(data_path):
     
     # From the sparsity graph, we should probably remove floor count:
     mini_train = np.delete(mini_train, np.argwhere(meta=='floor_count'), axis=1)
-    #meta = np.delete(meta, np.argwhere(meta=='floor_count'))
-    
     # From the sparsity graph, we should probably remove floor count:
     mini_train = np.delete(mini_train, np.argwhere(meta=='year_built'), axis=1)
-    #meta = np.delete(meta, np.argwhere(meta=='year_built'))
-    
-    # remove all rows with NaN:
-    '''
-    _mask = ~np.isnan(mini_train).any(axis=1)
-    mini_train = mini_train[_mask, :]
-    mini_y = mini_y[_mask]
-    assert mini_train.shape[0] == mini_y.shape[0]
-    '''
 
     # reduce complexity of data:
     print("Running PCA")
-    _mini_train_pca = pca.pca(mini_train, d=3)
-    # _mini_train_pca = kernalpca.kernalpca(mini_train, d=3)
+    #_mini_train_pca = pca.pca(mini_train, d=3)
+    _mini_train_pca = mini_train
     print("Finished PCA")
 
     # memory management:
@@ -116,13 +105,14 @@ def run1(data_path):
     print("Reading in testset...")
     test_x, _ = data.loadTestFeatures(test_file, test_weather_file, train_meta_file) # no y included; ignoring the column name output cuz I already know it
     test_x = np.delete(test_x, np.argwhere(meta=='floor_count'), axis=1)
+    # From the sparsity graph, we should probably remove floor count:
     test_x = np.delete(test_x, np.argwhere(meta=='year_built'), axis=1)
+    #pca_test_x = pca.incremental_pca(test_x, 3, 3000)
+    #del test_x
     meta = np.delete(meta, np.argwhere(meta=='year_built'))
     meta = np.delete(meta, np.argwhere(meta=='floor_count'))
-    
-    pca_test_x = pca.incremental_pca(test_x, 3, 3000)
-    del test_x
-    test_result = data.test(_model, pca_test_x, is_scipy=True)
+
+    test_result = data.test(_model, test_x, is_scipy=True)
     #np.save('test_out_example.npy', test_result)
-    data.test_to_csv(test_result,'./submissions/test_proto1.csv')
+    data.test_to_csv(test_result,'./submissions/test_proto1b.csv')
     

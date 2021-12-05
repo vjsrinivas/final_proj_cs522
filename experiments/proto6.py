@@ -85,9 +85,6 @@ def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
     
     '''
     re_model = keras.models.load_model('experiments/mlp', compile=False)
-    _preds = re_model.predict(_test, batch_size=512)
-    _preds = np.squeeze(_preds)
-    data.test_to_csv(_preds, 'submissions/test_proto6_keras.csv')
     '''
     
     model.fit(train, train_y, epochs=4, batch_size = 512, validation_data=(test, test_y), validation_batch_size=64)
@@ -98,6 +95,10 @@ def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
     print("Validation error:", _val)
 
     model.save('mlp')
+
+    _preds = model.predict(_test, batch_size=512)
+    _preds = np.squeeze(_preds)
+    data.test_to_csv(_preds, 'submissions/test_proto6_keras.csv')
 
 def loadTrainData(data_path):
     train_file = os.path.join(data_path, 'train.csv')
