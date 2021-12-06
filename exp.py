@@ -6,7 +6,7 @@ import os
 from data import data
 
 from experiments import proto1, proto2, proto3, proto4, proto5, proto6, proto1_b
-from experiments import proto7
+from experiments import proto7, proto9, proto9_b
 
 def parseArgs():
     args = argparse.ArgumentParser()
@@ -32,6 +32,10 @@ def expRun(exp_name:str, *exp_kwargs):
         proto6.run1(*exp_kwargs)
     elif exp_name == 'adaboost_v1':
         proto7.run1(*exp_kwargs)
+    elif exp_name == 'linear':
+        proto9.run1(*exp_kwargs)
+    elif exp_name == 'linear_b':
+        proto9_b.run1(*exp_kwargs)
     else:
         raise Exception("Unrecognized experiment name!")
 

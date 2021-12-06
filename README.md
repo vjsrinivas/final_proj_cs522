@@ -43,3 +43,5 @@ For example, we have a **Prototype 1** milestone due soon, and to run the final 
 | Random_of_ashrae_test |  (13) Random Forest  | Callable with `randomforest_of_ashrae_test.py` Executes fitting & evaluation of Random Forest for regression. | 0.8 | N/A | 1.758/1.363 |
 | Prototype 6 |  (13) MLP Keras   | Callable with `--exp proto6`. Executes training & evaluation of neural network for regression. | 2.2 | -0.0001895 | 2.306/2.239 |
 | Prototype 7 |  (13) AdaBoost with Regression Tree   | Callable with `--exp adaboost_v1`. Executes fitting & evaluation of AdaBoost with Regression Trees | 1.329 | 0.9822 | 1.873/1.491 |
+| Prototype 9 |  (13) AdaBoost with Regression Tree   | Callable with `--exp proto9`. Executes fitting & evaluation of Linear Regression on all 13 features | 3.795909891267558 | 0.0007017657329697613 | 4.340/3.792 |
+| Prototype 9b |  (13) AdaBoost with Regression Tree   | Callable with `--exp proto9b`. Executes fitting & evaluation of Linear Regression on 3 features after PCA reduction. | 4.156 | 0.001486 | 4.115/4.059 |

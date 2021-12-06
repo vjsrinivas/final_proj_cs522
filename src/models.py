@@ -4,6 +4,8 @@ import scipy
 import sklearn
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import AdaBoostRegressor
+from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_log_error as sk_rmsle
 from sklearn.metrics import r2_score as sk_r2score
 from sklearn.pipeline import make_pipeline
@@ -13,12 +15,6 @@ from sklearn import neighbors
 import time
 
 # Official test set has NO public ground truth; upload to kaggle to get final result
-def runTest():
-    raise NotImplementedError()
-
-def runValTest():
-    raise NotImplementedError()
-
 def rmsle(y, pred):
     raise NotImplementedError()
     n = y.shape[0]
@@ -29,6 +25,30 @@ def regressionTrees(x,y, test_data, test_data_y, max_depth=3):
     model = DecisionTreeRegressor(max_depth=max_depth)
     model.fit(x,y)
     pred = model.predict(test_data)
+    gt = test_data_y
+    _error = np.sqrt(sk_rmsle(pred, gt))
+    print("Average Validation RMSLE:", _error)
+    _r2 = sk_r2score(gt, pred)
+    print("R2 Score:", _r2)
+    return model
+
+def adaBoostRegression(x,y, test_data, test_data_y, max_depth=15, estimators=10):
+    model = AdaBoostRegressor(DecisionTreeRegressor(max_depth=max_depth), n_estimators=estimators)
+    model.fit(x, y)
+    pred = model.predict(test_data)
+    gt = test_data_y
+    _error = np.sqrt(sk_rmsle(pred, gt))
+    print("Average Validation RMSLE:", _error)
+    _r2 = sk_r2score(gt, pred)
+    print("R2 Score:", _r2)
+    return model
+
+
+def linearRegression(x,y, test_data, test_data_y):
+    model = LinearRegression()
+    model.fit(x, y)
+    pred = model.predict(test_data)
+    pred = np.where(pred<0, 0, pred)
     gt = test_data_y
     _error = np.sqrt(sk_rmsle(pred, gt))
     print("Average Validation RMSLE:", _error)
