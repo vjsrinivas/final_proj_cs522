@@ -56,38 +56,26 @@ def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
     x, y, _test = loadTrainData(data_path)
     writer = tf.keras.callbacks.TensorBoard(log_dir='./experiments/mlp_runs')
     
-    '''
     scaler = StandardScaler()
     scaler.fit(x)
     x = scaler.transform(x)
     _test = scaler.transform(_test)
-    '''
-    #print(x[0], x[900])
-    #print(y[0], y[900])
-
 
     #scaler_int = np.linalg.norm(y)
     #y = y / scaler_int
     
-    train, test, train_y, test_y = train_test_split(x, y, test_size=0.1, random_state=42)
+    train, test, train_y, test_y = train_test_split(x, y, test_size=0.3, random_state=42)
 
     model = tf.keras.Sequential([
         Dense(13, activation='relu'),
-        Dense(32, activation='relu'),
-        Dense(16, activation='relu'),
-        Dense(8, activation='relu'),
-        Dense(4, activation='relu'),
-        Dense(2, activation='relu'),
-        Dense(1)
-    ])
-
-    '''
-    model = tf.keras.Sequential([
-        Dense(13, activation='relu'),
         Dense(256, activation='relu'),
+        Dropout(0.5),
         Dense(256, activation='relu'),
+        Dropout(0.5),
         Dense(128, activation='relu'),
+        Dropout(0.2),
         Dense(128, activation='relu'),
+        Dropout(0.2),
         Dense(64, activation='relu'),
         Dense(32, activation='relu'),
         Dense(16, activation='relu'),
@@ -96,9 +84,8 @@ def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
         Dense(2, activation='relu'),
         Dense(1)
     ])
-    '''
     
-    model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=0.1),
+    model.compile(optimizer=tf.keras.optimizers.Adam(clipvalue=1.0),
                 loss=tf.keras.losses.MeanSquaredError(),)
     
     '''
@@ -106,7 +93,7 @@ def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
     '''
     
     model.fit(train, train_y, epochs=50, batch_size = 2**16, validation_data=(test, test_y), validation_batch_size=512, callbacks=[writer])
-    model.save('mlp_keras')
+    model.save('mlp_adam')
     
     # validation set RMSLE:
     val_preds = model.predict(test, batch_size = 2**16)
@@ -117,7 +104,7 @@ def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
     
     _preds = model.predict(_test, batch_size = 2**16)
     _preds = np.squeeze(_preds)
-    data.test_to_csv(_preds, 'submissions/test_proto6_keras_sgd.csv')
+    data.test_to_csv(_preds, 'submissions/test_proto6_keras_adam.csv')
 
 def loadTrainData(data_path):
     train_file = os.path.join(data_path, 'train.csv')

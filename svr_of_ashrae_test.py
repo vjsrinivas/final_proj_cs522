@@ -11,25 +11,14 @@ Original file is located at
 # Visualization
 """
 
-# TODO...
-train
-
-weather_train
 
 """# Load Pre-Processed Data (Cleaned Up Data)
 
 # New section
 """
-
-import gdown
 import pandas as pd
 import numpy as np
-
-ashrae_url = "https://drive.google.com/uc?id=1UlIpiR3Y6XiSWLhJGuaogrFgYsJns2FN"
-output = "cleaned_ashrae.csv"
-gdown.download(ashrae_url, output, quiet=False)
-
-clean_train = pd.read_csv('cleaned_ashrae.csv') # with ALL 14 features
+clean_train = pd.read_csv('colab_data.csv') # with ALL 14 features
 
 # reduce memory:
 clean_train['timestamp'] = clean_train['timestamp'].astype(np.int64)
@@ -58,8 +47,13 @@ X.shape
 Y.shape
 
 from sklearn.model_selection import train_test_split
+from src.pca import pca
 
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
+
+# PCA:
+X_train = pca(X_train, 3)
+X_test = pca(X_test, 3)
 
 #Standardizing the features we using standard scalar
 from sklearn.preprocessing import StandardScaler
@@ -80,7 +74,40 @@ y_pred = svr_rbf.predict(X_test_scaled)
 #Converting the negative values to zero 
 y_pred[y_pred < 0] = 0
 
-from sklearn.metrics import mean_squared_log_error
+#from sklearn.metrics import mean_squared_log_error
+#rmsle = mean_squared_log_error(Y_test, y_pred, squared=False)
+#print(rmsle)
 
-rmsle = mean_squared_log_error(Y_test, y_pred, squared=False)
-rmsle
+from sklearn.metrics import mean_squared_log_error as sk_rmsle
+from sklearn.metrics import r2_score as sk_r2score
+_error = np.sqrt(sk_rmsle(Y_test, y_pred))
+print("Average Validation RMSLE:", _error)
+_r2 = sk_r2score(Y_test, y_pred)
+print("R2 Score:", _r2)
+
+del X_train_scaled, X_train, X_test, X_test_scaled
+
+#==============================
+
+'''
+clean_test = pd.read_csv('colab_data_test.csv') # with ALL 14 features
+
+# reduce memory:
+clean_test['timestamp'] = clean_test['timestamp'].astype(np.int64)
+clean_test['meter'] = clean_test['meter'].astype(np.uint8)
+clean_test['site_id'] = clean_test['site_id'].astype(np.int64)
+clean_test['primary_use'] = clean_test['primary_use'].astype(np.int64)
+
+clean_test = clean_test.drop(columns='floor_count')
+clean_test = clean_test.drop(columns='year_built')
+#sample_test=clean_test.sample(frac=0.010)
+sample_test = clean_test.to_numpy()
+X_test_scaled = scaler.transform(sample_test)
+y_pred = svr_rbf.predict(X_test_scaled)
+
+#Converting the negative values to zero 
+y_pred[y_pred < 0] = 0
+print(y_pred.shape)
+import data
+data.test_to_csv(y_pred, 'submissions/test_random_svr_extreme_subsample.csv')
+'''

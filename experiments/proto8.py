@@ -13,10 +13,8 @@ from collections import OrderedDict
 from sklearn.metrics import mean_squared_log_error as sk_rmsle
 from sklearn.preprocessing import StandardScaler
 
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Dropout
+from torch.utils.tensorboard import SummaryWriter
+
 
 class RMSELoss(nn.Module):
     def __init__(self, eps=1e-6):
@@ -51,8 +49,10 @@ class ASHRAEDataset(Dataset):
         else:    
             return (self.x[index].float(), self.y[index].float() )
 
-def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
-    def run1(data_path):
+def run1(data_path, lr=0.01, epochs=25, momentum=0.9):
+    if not os.path.exists('./experiments/mlp_runs'): os.makedirs('./experiments/mlp_runs')
+    writer = SummaryWriter('./experiments/mlp_runs')
+
     train_file = os.path.join(data_path, 'train.csv')
     train_meta_file = os.path.join(data_path, 'building_metadata.csv')
     train_weather_file = os.path.join(data_path, 'weather_train.csv') # features for training
@@ -102,15 +102,23 @@ def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
     np.random.seed(10)
     mini_train_idx = np.random.choice(x.shape[0], size=mini_size)
     mini_train, mini_y = x[mini_train_idx], y[mini_train_idx]
-    print("Mini training size:", mini_train.shape, mini_y.shape)
-
-    # Graph out how sparse every feature is:
-    #data.featureSparsity(mini_train, meta) # disable fill nan
-    
+    print("Mini training size:", mini_train.shape, mini_y.shape)    
     # From the sparsity graph, we should probably remove floor count:
     mini_train = np.delete(mini_train, np.argwhere(meta=='floor_count'), axis=1)
     # From the sparsity graph, we should probably remove floor count:
     mini_train = np.delete(mini_train, np.argwhere(meta=='year_built'), axis=1)
+
+    # test on real testset:
+    # reduce with PCA:
+    print("Reading in testset...")
+    test_x, _ = data.loadTestFeatures(test_file, test_weather_file, train_meta_file) # no y included; ignoring the column name output cuz I already know it
+    test_x = np.delete(test_x, np.argwhere(meta=='floor_count'), axis=1)
+    # From the sparsity graph, we should probably remove floor count:
+    test_x = np.delete(test_x, np.argwhere(meta=='year_built'), axis=1)
+    #pca_test_x = pca.incremental_pca(test_x, 3, 3000)
+    #del test_x
+    meta = np.delete(meta, np.argwhere(meta=='year_built'))
+    meta = np.delete(meta, np.argwhere(meta=='floor_count'))
 
     # reduce complexity of data:
     print("Running PCA")
@@ -121,41 +129,25 @@ def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
     # memory management:
     del mini_train
 
-    _mini_train_pca, _mini_test_pca, mini_y, mini_test_y = train_test_split(_mini_train_pca, mini_y, test_size=0.1, random_state=42)
-
-    '''
-    print("PCA on training data")
-    if _mini_train_pca.shape[0] > 100000:
-        data.pca_3d_plot(_mini_train_pca[:100000,:])
-    else:
-        data.pca_3d_plot(_mini_train_pca)
-    '''
-
     # run classifier: regression trees:
     print("Fitting....")
-
-    scaler = StandardScaler()
-    scaler.fit(x)
-    x = scaler.transform(x)
-    _test = scaler.transform(_test)
-    
-    train, test, train_y, test_y = train_test_split(x, y, test_size=0.3, random_state=42)   
-    print("Training size: ", _mini_train_pca.shape, "Training label size:", mini_y.shape, "Testing size:", _mini_test_pca.shape, "Testing label size:", mini_test_y.shape)
+    train, test, train_y, test_y = train_test_split(_mini_train_pca, mini_y, test_size=0.3, random_state=42)   
 
     # extra preprocessing done here:
     _train_pca = ASHRAEDataset(train, train_y, use_cuda=True)
     _val_pca = ASHRAEDataset(test, test_y, use_cuda=True)
-    _test_pca = ASHRAEDataset(_test, [], use_cuda=True, no_y=True)
+    _test_pca = ASHRAEDataset(test_x, [], use_cuda=True, no_y=True)
+    
     print("Train size:", len(_train_pca))
     print("Val size:", len(_val_pca))
     print("Test size:", len(_test_pca))
-    
-    train_loader = DataLoader(_train_pca, batch_size=1000000)
-    val_loader = DataLoader(_val_pca, batch_size=1000000)
-    test_load = DataLoader(_test_pca, batch_size=1000000)
+
+    train_loader = DataLoader(_train_pca, batch_size=500000)
+    val_loader = DataLoader(_val_pca, batch_size=500000)
+    test_load = DataLoader(_test_pca, batch_size=500000)
 
     # define model
-    model = createModel(13,1) # full dimensions
+    model = createModel() # full dimensions
     
     if os.path.exists('nn_proto6.pt'):
         model.load_state_dict( torch.load('nn_proto6.pt') )
@@ -177,6 +169,7 @@ def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
             for i,(x,y) in enumerate(tqdm(train_loader)):
                 opt.zero_grad()
                 preds = model(x)
+                print(preds[0], preds[100], preds[300], preds[500], preds[900])
                 
                 #for j in range(x.shape[0]):
                     #print(preds[j], x[j])
@@ -187,11 +180,12 @@ def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
                 #_loss = torch.sqrt( loss(y, preds) )
                 _loss = loss(y, preds)
                 _loss.backward()
-                avg_epoch_loss = (_loss + avg_epoch_loss)/(i+1)
+                #avg_epoch_loss += _loss
+                print(_loss)
                 opt.step()
-            print("Average loss: %f"%(avg_epoch_loss))
+            print("Average loss: %f"%(avg_epoch_loss/i))
             print("====================")
-            #input()
+            writer.add_scalar('train/loss', avg_epoch_loss/i)
 
             print("Validating at epoch %i..."%(epoch))
             avg_rmsle = 0
@@ -203,6 +197,7 @@ def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
                     #pred = torch.squeeze(pred)
                     #pred *= scaler_int
                     _pred = pred.detach().cpu().numpy()
+                    print(_pred)
                     _y = y.detach().cpu().numpy()
                     #_pred *= scaler_int
                     #_y *= scaler_int
@@ -210,29 +205,17 @@ def run1(data_path, lr=0.001, epochs=25, momentum=0.9):
                     #print(_error)
                     avg_rmsle += _error
             #print(pred[0])
+            writer.add_scalar('val/loss', avg_rmsle/i)
             print("Average RMSLE: %f"%(avg_rmsle/i))
+            print("====================")
 
             model.train()
 
-        torch.save(model.state_dict(), 'nn_proto6.pt')
-
-    # test on real testset:
-    # reduce with PCA:
-    print("Reading in testset...")
-    test_x, _ = data.loadTestFeatures(test_file, test_weather_file, train_meta_file) # no y included; ignoring the column name output cuz I already know it
-    test_x = np.delete(test_x, np.argwhere(meta=='floor_count'), axis=1)
-    # From the sparsity graph, we should probably remove floor count:
-    test_x = np.delete(test_x, np.argwhere(meta=='year_built'), axis=1)
-    #pca_test_x = pca.incremental_pca(test_x, 3, 3000)
-    #del test_x
-    meta = np.delete(meta, np.argwhere(meta=='year_built'))
-    meta = np.delete(meta, np.argwhere(meta=='floor_count'))
-
-    test_result = data.test(_model, test_x, is_scipy=True)
-    #np.save('test_out_example.npy', test_result)
-    data.test_to_csv(test_result,'./submissions/test_proto1b.csv')
+        torch.save(model.state_dict(), './experiments/nn_proto6.pt')
 
     _out = np.ndarray((len(_test_pca)))
+    writer.close()
+
     with torch.no_grad():
         for i, x in enumerate(tqdm(test_load)):
             #print(x)
@@ -262,6 +245,7 @@ def createModel():
         ('dense_9', nn.Linear(4,2) ),
         ('relu_9', nn.ReLU()),
         ('dense_10', nn.Linear(2,1) ),
+        #('relu_10', nn.ReLU())
     ]))
 
     return _model

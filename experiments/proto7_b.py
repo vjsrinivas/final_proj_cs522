@@ -73,7 +73,7 @@ def run1(data_path):
 
     # reduce complexity of data:
     print("Running PCA")
-    _mini_train_pca = pca.pca(mini_train, d=3)
+    #_mini_train_pca = pca.pca(mini_train, d=3)
     #_mini_train_pca = mini_train
     print("Finished PCA")
 
@@ -100,12 +100,12 @@ def run1(data_path):
     test_x = np.delete(test_x, np.argwhere(meta=='floor_count'), axis=1)
     # From the sparsity graph, we should probably remove floor count:
     test_x = np.delete(test_x, np.argwhere(meta=='year_built'), axis=1)
-    pca_test_x = pca.incremental_pca(test_x, 3, 3000)
-    del test_x
+    #pca_test_x = pca.incremental_pca(test_x, 3, 3000)
+    #del test_x
     meta = np.delete(meta, np.argwhere(meta=='year_built'))
     meta = np.delete(meta, np.argwhere(meta=='floor_count'))
 
-    test_result = data.test(_model, pca_test_x, is_scipy=True)
+    test_result = data.test(_model, test_x, is_scipy=True)
     #np.save('test_out_example.npy', test_result)
-    data.test_to_csv(test_result,'./submissions/test_adaboost_v1_pca.csv')
+    data.test_to_csv(test_result,'./submissions/test_adaboost_v1.csv')
     
