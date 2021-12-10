@@ -102,7 +102,14 @@ def run1(data_path):
     #_model = models.regressionTrees(_mini_train_pca, mini_y, _mini_test_pca, mini_test_y, max_depth=15)
     _model = HistGradientBoostingRegressor(max_iter=1000, max_leaf_nodes=50)
     _model.fit(_mini_train_pca, mini_y)
+    
+    import time
+    t1 = time.time()
     pred = _model.predict(_mini_test_pca)
+    t2 = time.time()
+    print(t2-t1)
+
+    exit()
     pred = np.where(pred<0, 0, pred)
     _error = np.sqrt(sk_rmsle(mini_test_y, pred))
     print("Validation RMSLE:", _error)

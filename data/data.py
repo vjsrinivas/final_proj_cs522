@@ -91,6 +91,49 @@ def mapMetaToTrain(df_tb, df_tm, df_wm, fill_na=True):
 
     return df_tb.to_numpy(), y.to_numpy(), _cols # x,y
 
+def mapMetaToTrainv2(df_tb, df_tm, df_wm, fill_na=True):
+    df_tb = df_tb.merge(df_tm, left_on='building_id', right_on='building_id', how='left')
+    df_tb = df_tb.merge(df_wm, left_on=['site_id', 'timestamp'], right_on=['site_id', 'timestamp'], how="left")
+    
+    air_temperature_mean = df_tb['air_temperature'].mean()
+    sea_lvl_pressure_mean = df_tb['sea_level_pressure'].mean()
+    cloud_coverage_mean = df_tb['cloud_coverage'].mean()
+    dew_temperature_mean = df_tb['dew_temperature'].mean()
+    precip_depth_1_hr_mean = df_tb['precip_depth_1_hr'].mean()
+    wind_direction_mean = df_tb['wind_direction'].mean()
+    wind_speed_mean = df_tb['wind_speed'].mean()
+
+    df_tb['sea_level_pressure'] = df_tb['sea_level_pressure'].fillna(sea_lvl_pressure_mean)
+    df_tb['air_temperature'] = df_tb['air_temperature'].fillna(air_temperature_mean)
+    df_tb['cloud_coverage'] = df_tb['cloud_coverage'].fillna(cloud_coverage_mean)
+    df_tb['dew_temperature'] = df_tb['dew_temperature'].fillna(dew_temperature_mean)
+    df_tb['precip_depth_1_hr'] = df_tb['precip_depth_1_hr'].fillna(precip_depth_1_hr_mean)
+    df_tb['wind_direction'] = df_tb['wind_direction'].fillna(wind_direction_mean)
+    df_tb['wind_speed'] = df_tb['wind_speed'].fillna(wind_speed_mean)
+    
+    if fill_na:
+        for col in df_tb.columns:
+            if df_tb[col].isnull().values.any():
+                df_tb[col] = df_tb[col].fillna(0)
+    _cols = df_tb.columns.to_list() # gives you meter_reading as well
+
+    
+    # manually remove site 0 based on ASHRAE feeddback:
+    df_tb = df_tb[df_tb['site_id'] != 0]
+    # print("Removed Site 0 Data Shape: " + str(df_tb.shape))
+
+    y = df_tb.pop('meter_reading')
+        
+    # memory reduction:
+    for col in df_tb.columns:
+        _dtype = df_tb[col].dtype
+        if _dtype == np.float64:
+            df_tb[col] = df_tb[col].astype(np.float32)
+    df_tb['building_id'] = df_tb['building_id'].astype(np.uint16)
+    df_tb['meter'] = df_tb['meter'].astype(np.uint8)
+    
+    return df_tb.to_numpy(), y.to_numpy(), _cols # x,y
+
 def saveCache(np_list:np.ndarray, np_file):
     print("Saving cache file for %s"%(np_file))
     np.save(np_file, np_list)
