@@ -1,0 +1,32 @@
+/*
+100 -> 2.294189459781764; 0.9604736062305177
+200 -> 2.14926019534421; 0.9631289970896366
+500 -> 2.0177058788268876; 0.9691941048037968
+1000 -> 1.9324215671741942; 0.9741370272040172
+*/
+
+lgbm:Validation RMSLE: 1.8497458841420285
+Validation R2: 0.9749392138147941
+------------------
+the 256 structure
+Validation error: 4.09676154335922 (SGD)        
+
+=============
+
+Dense(13, activation='relu'),
+        Dense(32, activation='relu'),
+        Dense(16, activation='relu'),
+        Dense(8, activation='relu'),
+        Dense(4, activation='relu'),
+        Dense(2, activation='relu'),
+        Dense(1)
+Validation error: 4.090742634929597
+R2 Score: -2.908893836917059e-08
+
+----------------------
+SVR
+Average Validation RMSLE: 1.8970612822799011
+R2 Score: -0.0001283197838799488
+
+Average Validation RMSLE: 1.927336205757838
+R2 Score: -0.00018147421710268397
