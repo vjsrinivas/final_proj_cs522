@@ -25,7 +25,9 @@ def regressionTrees(x,y, test_data, test_data_y, max_depth=3):
     model = DecisionTreeRegressor(max_depth=max_depth)
     model.fit(x,y)
     pred = model.predict(test_data)
+    np.save('val_fuse_1.npy', pred)
     gt = test_data_y
+    np.save('val_gt.npy', gt)
     _error = np.sqrt(sk_rmsle(pred, gt))
     print("Average Validation RMSLE:", _error)
     _r2 = sk_r2score(gt, pred)
@@ -36,7 +38,7 @@ def adaBoostRegression(x,y, test_data, test_data_y, max_depth=15, estimators=10)
     model = AdaBoostRegressor(DecisionTreeRegressor(max_depth=max_depth), n_estimators=estimators)
     model.fit(x, y)
     pred = model.predict(test_data)
-    print(t2-t1)
+    np.save('val_fuse_2.npy', pred)
     gt = test_data_y
     _error = np.sqrt(sk_rmsle(pred, gt))
     print("Average Validation RMSLE:", _error)

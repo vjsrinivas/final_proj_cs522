@@ -7,7 +7,7 @@ import os
 from data import data
 
 from experiments import proto1, proto2, proto3, proto3_b, proto5, proto6, proto6_adam, proto1_b
-from experiments import proto7, proto9, proto9_b, proto8, lgbm, lgbm_b, proto7_b
+from experiments import proto7, proto9, proto9_b, proto8, lgbm, lgbm_b, proto7_b, protofuse
 
 def parseArgs():
     args = argparse.ArgumentParser()
@@ -47,6 +47,8 @@ def expRun(exp_name:str, *exp_kwargs):
         lgbm.run1(*exp_kwargs)
     elif exp_name == 'lgbm_b':
         lgbm_b.run1(*exp_kwargs)
+    elif exp_name == 'fuse':
+        protofuse.run1(*exp_kwargs)
     else:
         raise Exception("Unrecognized experiment name!")
 

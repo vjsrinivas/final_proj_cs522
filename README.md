@@ -50,4 +50,4 @@ For example, we have a **Prototype 1** milestone due soon, and to run the final 
 | Prototype 9 |  (13) Linear Regression   | Callable with `--exp proto9`. Executes fitting & evaluation of Linear Regression on all 13 features | 3.795909891267558 | 0.0007017657329697613 | 4.340/3.792 |
 | Prototype 9b |  (PCA) Linear Regression   | Callable with `--exp proto9b`. Executes fitting & evaluation of Linear Regression on 3 features after PCA reduction. | 4.156 | 0.001486 | 4.115/4.059 |
 | Prototype 10 |  (13) LightGBM  | Callable with `--exp lgbm`. Executes fitting & evaluation of LGBM. | 1.932 | 0.9741 | 2.162/1.846 |
-| Prototype 10b |  (PCA) LightGBM  | Callable with `--exp lgbm_b`. Executes fitting & evaluation of 3 features after PCA reduction. | 1.849 | 0.9749 |  |
+| Prototype 10b |  (PCA) LightGBM  | Callable with `--exp lgbm_b`. Executes fitting & evaluation of 3 features after PCA reduction. | 1.849 | 0.9749 | 3.060/2.666 |
